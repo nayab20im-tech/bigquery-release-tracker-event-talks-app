@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View and tweet the latest Google Cloud BigQuery release notes and updates.">
+    <title>BigQuery Release Insights</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Background glows -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo-section">
+                <div class="bq-logo">
+                    <i class="fa-solid fa-database"></i>
+                    <div class="bq-logo-glow"></div>
+                </div>
+                <div>
+                    <h1 id="app-title">BigQuery Release Insights</h1>
+                    <p class="subtitle">Stay updated with Google Cloud BigQuery releases and share them instantly</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <span id="last-updated-text" class="status-indicator">Last checked: Just now</span>
+                <button id="btn-refresh" class="btn btn-primary" aria-label="Refresh release notes">
+                    <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Stats -->
+        <section class="dashboard-stats" aria-label="Release note statistics">
+            <div class="stat-card" data-filter="All" id="stat-all">
+                <div class="stat-icon-wrapper bg-all">
+                    <i class="fa-solid fa-list"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Updates</span>
+                    <h2 class="stat-value" id="count-all">0</h2>
+                </div>
+            </div>
+            <div class="stat-card" data-filter="Feature" id="stat-features">
+                <div class="stat-icon-wrapper bg-feature">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Features</span>
+                    <h2 class="stat-value" id="count-features">0</h2>
+                </div>
+            </div>
+            <div class="stat-card" data-filter="Change" id="stat-changes">
+                <div class="stat-icon-wrapper bg-change">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Changes</span>
+                    <h2 class="stat-value" id="count-changes">0</h2>
+                </div>
+            </div>
+            <div class="stat-card" data-filter="Deprecation" id="stat-deprecations">
+                <div class="stat-icon-wrapper bg-deprecation">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Deprecations</span>
+                    <h2 class="stat-value" id="count-deprecations">0</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main class="main-layout">
+            <!-- Filter Bar & Search -->
+            <div class="controls-panel">
+                <div class="filter-tabs" role="tablist" aria-label="Update types filter">
+                    <button class="filter-tab active" data-filter="All" role="tab" aria-selected="true" id="filter-all-tab">All</button>
+                    <button class="filter-tab" data-filter="Feature" role="tab" aria-selected="false" id="filter-feature-tab">Features</button>
+                    <button class="filter-tab" data-filter="Change" role="tab" aria-selected="false" id="filter-change-tab">Changes</button>
+                    <button class="filter-tab" data-filter="Deprecation" role="tab" aria-selected="false" id="filter-deprecation-tab">Deprecations</button>
+                    <button class="filter-tab" data-filter="General" role="tab" aria-selected="false" id="filter-general-tab">Other</button>
+                </div>
+                
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search releases..." aria-label="Search release notes">
+                </div>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" class="loader-container hidden" aria-live="polite">
+                <div class="spinner"></div>
+                <p>Retrieving BigQuery release notes...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-container" class="error-container hidden" aria-live="assertive">
+                <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                <h3>Unable to Fetch Updates</h3>
+                <p id="error-message">Something went wrong while loading the release notes feed.</p>
+                <button id="btn-retry" class="btn btn-secondary">Try Again</button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state hidden">
+                <i class="fa-solid fa-folder-open empty-icon"></i>
+                <h3>No updates found</h3>
+                <p>Try modifying your filters or search keywords.</p>
+            </div>
+
+            <!-- Timeline/Updates Feed -->
+            <section class="updates-timeline" id="updates-feed" aria-label="Release updates list">
+                <!-- Dynamic Content Will Be Injected Here -->
+            </section>
+        </main>
+    </div>
+
+    <!-- Twitter/X Composer Modal -->
+    <div id="tweet-modal" class="modal-overlay hidden" aria-modal="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title"><i class="fa-brands fa-x-twitter"></i> Compose Tweet</h3>
+                <button id="btn-close-modal" class="btn-close" aria-label="Close modal">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Twitter UI Mockup -->
+                <div class="twitter-mockup">
+                    <div class="twitter-avatar">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div class="twitter-content">
+                        <div class="twitter-user-info">
+                            <span class="user-name">Cloud Explorer</span>
+                            <span class="user-handle">@gcp_explorer &middot; Now</span>
+                        </div>
+                        
+                        <div class="tweet-edit-container">
+                            <textarea id="tweet-textarea" placeholder="What's happening?" maxlength="280" aria-label="Tweet text editor"></textarea>
+                        </div>
+                        
+                        <!-- Link Preview Mockup -->
+                        <div class="link-preview-box" id="modal-link-preview">
+                            <div class="preview-icon">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <div class="preview-details">
+                                <span class="preview-source">docs.cloud.google.com</span>
+                                <h4 class="preview-title">BigQuery - Release Notes</h4>
+                                <p class="preview-desc">Official release notes and feature announcements for Google Cloud BigQuery.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="composer-footer">
+                    <div class="char-counter-container">
+                        <div class="progress-ring-container">
+                            <svg class="progress-ring" width="24" height="24">
+                                <circle class="progress-ring-bg" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="transparent" r="10" cx="12" cy="12"/>
+                                <circle id="progress-ring-fill" class="progress-ring-fill" stroke="#4285f4" stroke-width="2.5" fill="transparent" r="10" cx="12" cy="12"/>
+                            </svg>
+                        </div>
+                        <span id="char-counter">280</span>
+                    </div>
+                    
+                    <button id="btn-submit-tweet" class="btn btn-tweet">
+                        <i class="fa-brands fa-x-twitter"></i>
+                        <span>Post to X</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
